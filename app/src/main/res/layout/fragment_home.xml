@@ -27,7 +27,7 @@
         android:layout_marginStart="178dp"
         android:layout_marginTop="120dp"
         android:layout_marginEnd="136dp"
-        android:text="madcamp kaist"
+        android:text="madcamp kaist12"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
