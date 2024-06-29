@@ -2,7 +2,6 @@ package com.example.firstweek.ui.notifications
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Base64
@@ -28,35 +27,75 @@ class NotificationsFragment : Fragment() {
         val root: View = binding.root
 
         sharedPreferences = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-        loadImageFromSharedPreferences()
+        loadImagesFromSharedPreferences()
 
         binding.buttonSave.setOnClickListener {
-            deleteAllImages()
+            clearImagesFromSharedPreferences()
         }
 
         return root
     }
 
-    private fun loadImageFromSharedPreferences() {
-        val encodedImages = sharedPreferences.getStringSet("saved_images", null)
-        val imageViews = listOf(binding.imageView1, binding.imageView2, binding.imageView3, binding.imageView4, binding.imageView5, binding.imageView6)
-        if (encodedImages != null) {
-            val decodedBitmaps = encodedImages.map {
-                val byteArray = Base64.decode(it, Base64.DEFAULT)
-                BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-            }
-            for ((bitmap, imageView) in decodedBitmaps.zip(imageViews)) {
-                imageView.setImageBitmap(bitmap)
+    private fun loadImagesFromSharedPreferences() {
+        val savedImages = sharedPreferences.getStringSet("saved_images", emptySet())
+        savedImages?.forEachIndexed { index, encodedImage ->
+            val byteArray = Base64.decode(encodedImage, Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            when (index) {
+                0 -> binding.imageView1.setImageBitmap(bitmap)
+                1 -> binding.imageView2.setImageBitmap(bitmap)
+                2 -> binding.imageView3.setImageBitmap(bitmap)
+                3 -> binding.imageView4.setImageBitmap(bitmap)
+                4 -> binding.imageView5.setImageBitmap(bitmap)
+                5 -> binding.imageView6.setImageBitmap(bitmap)
+                6 -> binding.imageView7.setImageBitmap(bitmap)
+                7 -> binding.imageView8.setImageBitmap(bitmap)
+                8 -> binding.imageView9.setImageBitmap(bitmap)
+                9 -> binding.imageView10.setImageBitmap(bitmap)
+                10 -> binding.imageView11.setImageBitmap(bitmap)
+                11 -> binding.imageView12.setImageBitmap(bitmap)
+                12 -> binding.imageView13.setImageBitmap(bitmap)
+                13 -> binding.imageView14.setImageBitmap(bitmap)
+                14 -> binding.imageView15.setImageBitmap(bitmap)
+                15 -> binding.imageView16.setImageBitmap(bitmap)
+                16 -> binding.imageView17.setImageBitmap(bitmap)
+                17 -> binding.imageView18.setImageBitmap(bitmap)
+                18 -> binding.imageView17.setImageBitmap(bitmap)
+                19 -> binding.imageView18.setImageBitmap(bitmap)
+                20 -> binding.imageView17.setImageBitmap(bitmap)
             }
         }
     }
 
-    private fun deleteAllImages() {
-        sharedPreferences.edit().remove("saved_images").apply()
-        val imageViews = listOf(binding.imageView1, binding.imageView2, binding.imageView3, binding.imageView4, binding.imageView5, binding.imageView6)
-        imageViews.forEach {
-            it.setImageBitmap(null)
-        }
+    private fun clearImagesFromSharedPreferences() {
+        val editor = sharedPreferences.edit()
+        editor.remove("saved_images")
+        editor.apply()
+        clearImageViews()
+    }
+
+    private fun clearImageViews() {
+        binding.imageView1.setImageBitmap(null)
+        binding.imageView2.setImageBitmap(null)
+        binding.imageView3.setImageBitmap(null)
+        binding.imageView4.setImageBitmap(null)
+        binding.imageView5.setImageBitmap(null)
+        binding.imageView6.setImageBitmap(null)
+        binding.imageView7.setImageBitmap(null)
+        binding.imageView8.setImageBitmap(null)
+        binding.imageView9.setImageBitmap(null)
+        binding.imageView10.setImageBitmap(null)
+        binding.imageView11.setImageBitmap(null)
+        binding.imageView12.setImageBitmap(null)
+        binding.imageView13.setImageBitmap(null)
+        binding.imageView14.setImageBitmap(null)
+        binding.imageView15.setImageBitmap(null)
+        binding.imageView16.setImageBitmap(null)
+        binding.imageView17.setImageBitmap(null)
+        binding.imageView18.setImageBitmap(null)
+        binding.imageView19.setImageBitmap(null)
+        binding.imageView20.setImageBitmap(null)
+
     }
 
     override fun onDestroyView() {
@@ -64,4 +103,3 @@ class NotificationsFragment : Fragment() {
         _binding = null
     }
 }
-

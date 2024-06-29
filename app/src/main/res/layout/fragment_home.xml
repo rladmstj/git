@@ -15,36 +15,10 @@
         android:layout_marginEnd="8dp"
         android:textAlignment="center"
         android:textSize="20sp"
+        android:text="연락처"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="178dp"
-        android:layout_marginTop="120dp"
-        android:layout_marginEnd="136dp"
-        android:text="madcp kais24142"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextVkjgdfdkgkw"
-        tools:layout_editor_absoluteX="161dp"
-        tools:layout_editor_absoluteY="371dp" />
-
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="TextV776757iew"
-        tools:layout_editor_absoluteX="156dp"
-        tools:layout_editor_absoluteY="544dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>
