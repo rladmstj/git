@@ -53,4 +53,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation("androidx.core:core-ktx:1.6.0") // 이 줄을 추가합니다.
+    implementation("androidx.core:core-ktx:1.6.0") // core-ktx 라이브러리를 추가합니다.
 }
