@@ -95,6 +95,9 @@ class DashboardFragment : Fragment() {
         val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
         val existingImages = sharedPreferences.getStringSet("saved_images", mutableSetOf())?.toMutableSet()
         existingImages?.add(encodedImage)
+        if (existingImages?.size ?: 0 > 20) {
+            existingImages?.remove(existingImages.first())
+        }
         editor.putStringSet("saved_images", existingImages)
         editor.apply()
     }
@@ -119,6 +122,8 @@ class DashboardFragment : Fragment() {
         _binding = null
     }
 }
+
+
 
 
 
