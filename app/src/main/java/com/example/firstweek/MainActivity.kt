@@ -55,6 +55,19 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+    override fun onSupportNavigateUp(): Boolean {
+        val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        return navController.navigateUp() || super.onSupportNavigateUp()
+    }
+
+    override fun onBackPressed() {
+        val navController = findNavController(R.id.nav_host_fragment_activity_main)
+        if (navController.currentBackStackEntry != null) {
+            navController.popBackStack()
+        } else {
+            super.onBackPressed()
+        }
+    }
 
     val PERM_STORAGE = 9
     val PERM_CAMERA = 10
