@@ -5,7 +5,7 @@
     <color name="colorAccent">#03DAC5</color>
 
     <color name="purple_200">#BB86FC</color>
-    <color name="purple_500">#FFFFFF</color>
+    <color name="purple_500">#3700B3</color>
     <color name="purple_700">#3700B3</color>
     <color name="teal_200">#03DAC5</color>
     <color name="teal_700">#018786</color>
@@ -18,5 +18,5 @@
 
     <!-- 버튼 색상 정의 -->
     <color name="button_background">#808000</color> <!-- 보다 어두운 배경색 -->
-    <color name="button_text_color">#FFFFFF</color> <!-- 대비되는 텍스트 색상 -->
+    <color name="button_text_color">#000000</color> <!-- 대비되는 텍스트 색상 -->
 </resources>

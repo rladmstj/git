@@ -32,6 +32,7 @@ class NotificationsFragment : Fragment() {
         val root: View = binding.root
 
         sharedPreferences = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+
         loadImagesFromSharedPreferences()
 
         binding.buttonSave.setOnClickListener {
@@ -42,22 +43,27 @@ class NotificationsFragment : Fragment() {
     }
 
     private fun loadImagesFromSharedPreferences() {
-        binding.gridLayout.removeAllViews()
+        binding.linearLayout.removeAllViews()
         imageViews.clear()
 
         val savedImages = sharedPreferences.getStringSet("saved_images", emptySet())
-        savedImages?.forEachIndexed { index, encodedImage ->
+        savedImages?.forEach { encodedImage ->
             val byteArray = Base64.decode(encodedImage, Base64.DEFAULT)
             val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
             val imageView = ImageView(requireContext()).apply {
                 setImageBitmap(bitmap)
-                layoutParams = ViewGroup.LayoutParams(150, 150)
+                layoutParams = ViewGroup.MarginLayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    500
+                ).apply {
+                    setMargins(0, 16, 0, 16)
+                }
                 setOnClickListener {
                     toggleImageSelection(this)
                 }
             }
             imageViews.add(imageView)
-            binding.gridLayout.addView(imageView)
+            binding.linearLayout.addView(imageView)
         }
     }
 
