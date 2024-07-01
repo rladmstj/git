@@ -7,19 +7,20 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
-import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentDashboardBinding
 import java.io.ByteArrayOutputStream
 
@@ -32,6 +33,7 @@ class DashboardFragment : Fragment() {
     private val PERMISSION_REQUEST_CODE = 100
 
     private lateinit var sharedPreferences: SharedPreferences
+    private val imageViews = mutableListOf<ImageView>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,11 +65,17 @@ class DashboardFragment : Fragment() {
             }
         }
 
-        binding.button3.setOnClickListener {
-            saveImageToSharedPreferences(binding.imagePreview.drawable.toBitmap())
-            val navController = findNavController()
-            navController.navigate(R.id.navigation_notifications)
+        binding.buttonSave.setOnClickListener {
+            val bitmap = binding.imagePreview.drawable.toBitmap()
+            saveImageToSharedPreferences(bitmap)
+            addImageToLayout(bitmap)
         }
+
+        binding.buttonDelete.setOnClickListener {
+            clearSelectedImagesFromLayout()
+        }
+
+        loadImagesFromSharedPreferences()
 
         return root
     }
@@ -97,6 +105,62 @@ class DashboardFragment : Fragment() {
         existingImages?.add(encodedImage)
         editor.putStringSet("saved_images", existingImages)
         editor.apply()
+    }
+
+    private fun loadImagesFromSharedPreferences() {
+        binding.layoutImage.removeAllViews()
+        imageViews.clear()
+
+        val savedImages = sharedPreferences.getStringSet("saved_images", emptySet())
+        savedImages?.forEach { encodedImage ->
+            val byteArray = Base64.decode(encodedImage, Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            addImageToLayout(bitmap)
+        }
+    }
+
+    private fun addImageToLayout(bitmap: Bitmap) {
+        val imageView = ImageView(requireContext()).apply {
+            setImageBitmap(bitmap)
+            layoutParams = ViewGroup.MarginLayoutParams(
+                180.dpToPx(), // 너비를 100dp로 설정
+                180.dpToPx()  // 높이를 100dp로 설정
+            ).apply {
+                setMargins(1, 1, 1, 1)
+            }
+            setOnClickListener {
+                toggleImageSelection(this)
+            }
+        }
+        imageViews.add(imageView)
+        binding.layoutImage.addView(imageView)
+    }
+
+    private fun Int.dpToPx(): Int {
+        return (this * resources.displayMetrics.density).toInt()
+    }
+
+    private fun toggleImageSelection(imageView: ImageView) {
+        imageView.isSelected = !imageView.isSelected
+        imageView.alpha = if (imageView.isSelected) 0.5f else 1.0f
+    }
+
+    private fun clearSelectedImagesFromLayout() {
+        val selectedImages = imageViews.filter { it.isSelected }
+        val existingImages = sharedPreferences.getStringSet("saved_images", mutableSetOf())?.toMutableSet()
+
+        selectedImages.forEach { selectedImage ->
+            val bitmap = (selectedImage.drawable as BitmapDrawable).bitmap
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+            val byteArray = byteArrayOutputStream.toByteArray()
+            val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
+            existingImages?.remove(encodedImage)
+            binding.layoutImage.removeView(selectedImage)
+        }
+
+        sharedPreferences.edit().putStringSet("saved_images", existingImages).apply()
+        imageViews.removeAll(selectedImages)
     }
 
     override fun onRequestPermissionsResult(

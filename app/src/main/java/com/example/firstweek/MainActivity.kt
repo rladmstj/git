@@ -31,8 +31,6 @@ class MainActivity : AppCompatActivity() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as NavHostFragment
         navController = navHostFragment.navController
 
-
-        //  val navController = findNavController(R.id.nav_host_fragment_activity_main) 필요함!!!
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         val appBarConfiguration = AppBarConfiguration(
@@ -52,9 +50,8 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
-
-
     }
+
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_activity_main)
         return navController.navigateUp() || super.onSupportNavigateUp()
@@ -69,8 +66,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    val PERM_STORAGE = 9
-    val PERM_CAMERA = 10
+    private val PERM_STORAGE = 9
+    private val PERM_CAMERA = 10
 
     private fun requestPermissions() {
         val permissions = arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)

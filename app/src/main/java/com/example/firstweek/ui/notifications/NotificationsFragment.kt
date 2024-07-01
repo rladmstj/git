@@ -23,71 +23,10 @@ class NotificationsFragment : Fragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private val imageViews = mutableListOf<ImageView>()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentNotificationsBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
-        sharedPreferences = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
-        loadImagesFromSharedPreferences()
 
-        binding.buttonSave.setOnClickListener {
-            clearSelectedImagesFromSharedPreferences()
-        }
 
-        return root
-    }
-
-    private fun loadImagesFromSharedPreferences() {
-        binding.linearLayout.removeAllViews()
-        imageViews.clear()
-
-        val savedImages = sharedPreferences.getStringSet("saved_images", emptySet())
-        savedImages?.forEach { encodedImage ->
-            val byteArray = Base64.decode(encodedImage, Base64.DEFAULT)
-            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-            val imageView = ImageView(requireContext()).apply {
-                setImageBitmap(bitmap)
-                layoutParams = ViewGroup.MarginLayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    500
-                ).apply {
-                    setMargins(0, 16, 0, 16)
-                }
-                setOnClickListener {
-                    toggleImageSelection(this)
-                }
-            }
-            imageViews.add(imageView)
-            binding.linearLayout.addView(imageView)
-        }
-    }
-
-    private fun toggleImageSelection(imageView: ImageView) {
-        imageView.isSelected = !imageView.isSelected
-        imageView.alpha = if (imageView.isSelected) 0.5f else 1.0f
-    }
-
-    private fun clearSelectedImagesFromSharedPreferences() {
-        val selectedImages = imageViews.filter { it.isSelected }
-        val existingImages = sharedPreferences.getStringSet("saved_images", mutableSetOf())?.toMutableSet()
-
-        selectedImages.forEach { selectedImage ->
-            val bitmap = (selectedImage.drawable as BitmapDrawable).bitmap
-            val byteArrayOutputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
-            val byteArray = byteArrayOutputStream.toByteArray()
-            val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
-            existingImages?.remove(encodedImage)
-        }
-
-        sharedPreferences.edit().putStringSet("saved_images", existingImages).apply()
-        loadImagesFromSharedPreferences()
-    }
 
     override fun onDestroyView() {
         super.onDestroyView()
