@@ -2,18 +2,20 @@ package com.example.firstweek.ui.notifications
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.Paint
 import android.os.Bundle
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentNotificationsBinding
-import java.io.ByteArrayOutputStream
+import org.json.JSONArray
+import org.json.JSONObject
 
 class NotificationsFragment : Fragment() {
 
@@ -21,15 +23,145 @@ class NotificationsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var sharedPreferences: SharedPreferences
-    private val imageViews = mutableListOf<ImageView>()
+    private val tasks = mutableListOf<Task>()
 
+    data class Task(val text: String, var isChecked: Boolean)
 
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentNotificationsBinding.inflate(inflater, container, false)
+        val root: View = binding.root
 
+        sharedPreferences = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        loadTasks()
 
+        binding.addTaskButton.setOnClickListener {
+            addTask("")
+        }
 
+        return root
+    }
+
+    private fun addTask(text: String) {
+        val taskLayout = LinearLayout(requireContext())
+        taskLayout.orientation = LinearLayout.HORIZONTAL
+
+        val checkBox = CheckBox(requireContext())
+        val editText = EditText(requireContext())
+        editText.hint = "Enter task"
+        editText.setText(text)
+        editText.layoutParams = LinearLayout.LayoutParams(
+            0,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            1f
+        )
+
+        val task = Task(text, false)
+        tasks.add(task)
+        saveTasks()
+
+        checkBox.setOnCheckedChangeListener { _, isChecked ->
+            task.isChecked = isChecked
+            if (isChecked) {
+                editText.paintFlags = editText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
+            } else {
+                editText.paintFlags = editText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+            }
+            saveTasks()
+        }
+
+        editText.setOnLongClickListener {
+            tasks.remove(task)
+            binding.tasksContainer.removeView(taskLayout)
+            saveTasks()
+            true
+        }
+
+        taskLayout.addView(checkBox)
+        taskLayout.addView(editText)
+        binding.tasksContainer.addView(taskLayout)
+    }
+
+    private fun saveTasks() {
+        val editor = sharedPreferences.edit()
+        val jsonArray = JSONArray()
+        tasks.forEach { task ->
+            val jsonObject = JSONObject()
+            jsonObject.put("text", task.text)
+            jsonObject.put("isChecked", task.isChecked)
+            jsonArray.put(jsonObject)
+        }
+        editor.putString("tasks", jsonArray.toString())
+        editor.apply()
+    }
+
+    private fun loadTasks() {
+        val tasksString = sharedPreferences.getString("tasks", "[]")
+        val jsonArray = JSONArray(tasksString)
+        for (i in 0 until jsonArray.length()) {
+            val jsonObject = jsonArray.getJSONObject(i)
+            val text = jsonObject.getString("text")
+            val isChecked = jsonObject.getBoolean("isChecked")
+            val task = Task(text, isChecked)
+            tasks.add(task)
+            addTaskToView(task)
+        }
+    }
+
+    private fun addTaskToView(task: Task) {
+        val taskLayout = LinearLayout(requireContext())
+        taskLayout.orientation = LinearLayout.HORIZONTAL
+
+        val checkBox = CheckBox(requireContext())
+        val editText = EditText(requireContext())
+        editText.hint = "Enter task"
+        editText.setText(task.text)
+        editText.layoutParams = LinearLayout.LayoutParams(
+            0,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+            1f
+        )
+
+        checkBox.isChecked = task.isChecked
+        if (task.isChecked) {
+            editText.paintFlags = editText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
+        } else {
+            editText.paintFlags = editText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+        }
+
+        checkBox.setOnCheckedChangeListener { _, isChecked ->
+            task.isChecked = isChecked
+            if (isChecked) {
+                editText.paintFlags = editText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+                editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
+            } else {
+                editText.paintFlags = editText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+            }
+            saveTasks()
+        }
+
+        editText.setOnLongClickListener {
+            tasks.remove(task)
+            binding.tasksContainer.removeView(taskLayout)
+            saveTasks()
+            true
+        }
+
+        taskLayout.addView(checkBox)
+        taskLayout.addView(editText)
+        binding.tasksContainer.addView(taskLayout)
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
 }
+
