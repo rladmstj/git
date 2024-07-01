@@ -43,4 +43,3 @@
         app:layout_constraintTop_toBottomOf="@+id/imagePreview" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
