@@ -2,14 +2,18 @@ package com.example.firstweek.ui.notifications
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.example.firstweek.databinding.FragmentNotificationsBinding
+import java.io.ByteArrayOutputStream
 
 class NotificationsFragment : Fragment() {
 
@@ -17,6 +21,7 @@ class NotificationsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private lateinit var sharedPreferences: SharedPreferences
+    private val imageViews = mutableListOf<ImageView>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,72 +35,52 @@ class NotificationsFragment : Fragment() {
         loadImagesFromSharedPreferences()
 
         binding.buttonSave.setOnClickListener {
-            clearImagesFromSharedPreferences()
+            clearSelectedImagesFromSharedPreferences()
         }
 
         return root
     }
 
     private fun loadImagesFromSharedPreferences() {
+        binding.gridLayout.removeAllViews()
+        imageViews.clear()
+
         val savedImages = sharedPreferences.getStringSet("saved_images", emptySet())
         savedImages?.forEachIndexed { index, encodedImage ->
             val byteArray = Base64.decode(encodedImage, Base64.DEFAULT)
             val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-            when (index) {
-                0 -> binding.imageView1.setImageBitmap(bitmap)
-                1 -> binding.imageView2.setImageBitmap(bitmap)
-                2 -> binding.imageView3.setImageBitmap(bitmap)
-                3 -> binding.imageView4.setImageBitmap(bitmap)
-                4 -> binding.imageView5.setImageBitmap(bitmap)
-                5 -> binding.imageView6.setImageBitmap(bitmap)
-                6 -> binding.imageView7.setImageBitmap(bitmap)
-                7 -> binding.imageView8.setImageBitmap(bitmap)
-                8 -> binding.imageView9.setImageBitmap(bitmap)
-                9 -> binding.imageView10.setImageBitmap(bitmap)
-                10 -> binding.imageView11.setImageBitmap(bitmap)
-                11 -> binding.imageView12.setImageBitmap(bitmap)
-                12 -> binding.imageView13.setImageBitmap(bitmap)
-                13 -> binding.imageView14.setImageBitmap(bitmap)
-                14 -> binding.imageView15.setImageBitmap(bitmap)
-                15 -> binding.imageView16.setImageBitmap(bitmap)
-                16 -> binding.imageView17.setImageBitmap(bitmap)
-                17 -> binding.imageView18.setImageBitmap(bitmap)
-                18 -> binding.imageView17.setImageBitmap(bitmap)
-                19 -> binding.imageView18.setImageBitmap(bitmap)
-                20 -> binding.imageView17.setImageBitmap(bitmap)
+            val imageView = ImageView(requireContext()).apply {
+                setImageBitmap(bitmap)
+                layoutParams = ViewGroup.LayoutParams(150, 150)
+                setOnClickListener {
+                    toggleImageSelection(this)
+                }
             }
+            imageViews.add(imageView)
+            binding.gridLayout.addView(imageView)
         }
     }
 
-    private fun clearImagesFromSharedPreferences() {
-        val editor = sharedPreferences.edit()
-        editor.remove("saved_images")
-        editor.apply()
-        clearImageViews()
+    private fun toggleImageSelection(imageView: ImageView) {
+        imageView.isSelected = !imageView.isSelected
+        imageView.alpha = if (imageView.isSelected) 0.5f else 1.0f
     }
 
-    private fun clearImageViews() {
-        binding.imageView1.setImageBitmap(null)
-        binding.imageView2.setImageBitmap(null)
-        binding.imageView3.setImageBitmap(null)
-        binding.imageView4.setImageBitmap(null)
-        binding.imageView5.setImageBitmap(null)
-        binding.imageView6.setImageBitmap(null)
-        binding.imageView7.setImageBitmap(null)
-        binding.imageView8.setImageBitmap(null)
-        binding.imageView9.setImageBitmap(null)
-        binding.imageView10.setImageBitmap(null)
-        binding.imageView11.setImageBitmap(null)
-        binding.imageView12.setImageBitmap(null)
-        binding.imageView13.setImageBitmap(null)
-        binding.imageView14.setImageBitmap(null)
-        binding.imageView15.setImageBitmap(null)
-        binding.imageView16.setImageBitmap(null)
-        binding.imageView17.setImageBitmap(null)
-        binding.imageView18.setImageBitmap(null)
-        binding.imageView19.setImageBitmap(null)
-        binding.imageView20.setImageBitmap(null)
+    private fun clearSelectedImagesFromSharedPreferences() {
+        val selectedImages = imageViews.filter { it.isSelected }
+        val existingImages = sharedPreferences.getStringSet("saved_images", mutableSetOf())?.toMutableSet()
 
+        selectedImages.forEach { selectedImage ->
+            val bitmap = (selectedImage.drawable as BitmapDrawable).bitmap
+            val byteArrayOutputStream = ByteArrayOutputStream()
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+            val byteArray = byteArrayOutputStream.toByteArray()
+            val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
+            existingImages?.remove(encodedImage)
+        }
+
+        sharedPreferences.edit().putStringSet("saved_images", existingImages).apply()
+        loadImagesFromSharedPreferences()
     }
 
     override fun onDestroyView() {
@@ -103,3 +88,5 @@ class NotificationsFragment : Fragment() {
         _binding = null
     }
 }
+
+
