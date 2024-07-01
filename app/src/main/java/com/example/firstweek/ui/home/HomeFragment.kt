@@ -18,7 +18,9 @@ import java.io.InputStream
 import java.nio.charset.Charset
 
 class HomeFragment : Fragment() {
-    private lateinit var listView: ListView
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
+   // private lateinit var listView: ListView
     private lateinit var contactAdapter: ContactAdapter
     // private lateinit var selectedContactTextView: TextView
     private var contactsList: MutableList<Contact> = mutableListOf()
@@ -27,10 +29,14 @@ class HomeFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_home, container, false)
+        _binding=FragmentHomeBinding.inflate(inflater, container, false)
+
+         val root=binding.root
+
+       // val root = inflater.inflate(R.layout.fragment_home, container, false)
 
         // Initialize ListView and ContactAdapter
-        listView = root.findViewById(R.id.listView)
+       // listView = root.findViewById(R.id.listView)
         //    selectedContactTextView=root.findViewById(R.id.selectedContactTextView)
 
         // Load JSON from raw resources
@@ -39,13 +45,13 @@ class HomeFragment : Fragment() {
 
         // Set up adapter with parsed contacts
         contactAdapter = ContactAdapter(requireContext(), contactsList)
-        listView.adapter = contactAdapter
+        binding.listView.adapter = contactAdapter
 
         // listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
         //   val contact = contactsList[position]
         // selectedContactTextView.text = "Name: ${contact.name}\nPhone: ${contact.phone}"
         //}
-        listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
+        binding.listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             val contact = contactsList[position]
             // Navigate to ContactDetailFragment with the selected contact details
             val fragment = ContactDetailFragment.newInstance(contact.name, contact.phone)
