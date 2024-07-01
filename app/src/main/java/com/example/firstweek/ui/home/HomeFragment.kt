@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentHomeBinding
 import org.json.JSONArray
@@ -53,21 +54,22 @@ class HomeFragment : Fragment() {
         //}
         binding.listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             val contact = contactsList[position]
-            // Navigate to ContactDetailFragment with the selected contact details
-            val fragment = ContactDetailFragment.newInstance(contact.name, contact.phone)
-            val transaction: FragmentTransaction = parentFragmentManager.beginTransaction()
-            transaction.replace(R.id.fragment_container, fragment)
-            transaction.addToBackStack(null)
-            transaction.commit()
-        }
+            val bundle = Bundle().apply {
+                putString("contactName", contact.name)
+                putString("contactPhone", contact.phone)
+            }
+            findNavController().navigate(R.id.contactsDetailFragment, bundle)
+
+
+    }
 
         return root
     }
 
-//    override fun onDestroyView() {
-//        super.onDestroyView()
-//        _binding = null
-//    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     private fun loadJSONFromRawResource(resourceId: Int): String? {
         val inputStream: InputStream = resources.openRawResource(resourceId)
         val size = inputStream.available()
