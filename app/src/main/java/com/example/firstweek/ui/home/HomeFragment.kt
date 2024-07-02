@@ -111,7 +111,7 @@ class HomeFragment : Fragment() {
     private lateinit var contactAdapter: ContactAdapter
     private var contactsList: MutableList<Contact> = mutableListOf()
 
-    private val sharedViewModel: SharedViewModel by activityViewModels() // ViewModel 초기화
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -124,7 +124,7 @@ class HomeFragment : Fragment() {
         sortContacts()
 
         contactAdapter = ContactAdapter(requireContext(), contactsList) { contact ->
-            sharedViewModel.selectContact(contact) // 선택한 연락처를 ViewModel에 설정
+            sharedViewModel.selectContact(contact)
             findNavController().navigate(R.id.contactsDetailFragment)
         }
 
@@ -138,13 +138,19 @@ class HomeFragment : Fragment() {
         // 새로운 연락처를 받아 추가하는 로직
         findNavController().getBackStackEntry(R.id.navigation_home).savedStateHandle.getLiveData<Contact>("newContact")
             .observe(viewLifecycleOwner, Observer { newContact ->
-                addContact(newContact)
+                newContact?.let {
+                    if (!contactsList.contains(it)) {
+                        addContact(it)
+                        findNavController().getBackStackEntry(R.id.navigation_home).savedStateHandle.set("newContact", null)
+                    }
+                }
             })
 
         // 삭제된 연락처를 받아 삭제하는 로직
         sharedViewModel.deletedContact.observe(viewLifecycleOwner, Observer { deletedContact ->
             deletedContact?.let {
                 removeContact(it)
+                sharedViewModel.clearDeletedContact()
             }
         })
 
@@ -185,9 +191,9 @@ class HomeFragment : Fragment() {
         jsonString?.let {
             try {
                 val jsonArray = JSONArray(it)
-                contactsList.clear() // 기존 연락처 목록을 지우고 새로 로드
+                contactsList.clear()
                 for (i in 0 until jsonArray.length()) {
-                    val jsonObject: JSONObject = jsonArray.getJSONObject(i)
+                    val jsonObject = jsonArray.getJSONObject(i)
                     val name = jsonObject.getString("name")
                     val phone = jsonObject.getString("phone")
                     if (!contactsList.any { contact -> contact.getName() == name && contact.getPhone() == phone }) {
@@ -210,6 +216,7 @@ class HomeFragment : Fragment() {
     }
 
     fun removeContact(contact: Contact) {
+        Log.d("HomeFragment", "Trying to remove contact: ${contact.getName()} - ${contact.getPhone()}")
         val iterator = contactsList.iterator()
         while (iterator.hasNext()) {
             val item = iterator.next()

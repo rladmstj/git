@@ -10,7 +10,6 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.firstweek.databinding.FragmentContactDetailBinding
 
-
 class ContactDetailFragment : Fragment() {
     private var _binding: FragmentContactDetailBinding? = null
     private val binding get() = _binding!!
@@ -46,4 +45,3 @@ class ContactDetailFragment : Fragment() {
         _binding = null
     }
 }
-

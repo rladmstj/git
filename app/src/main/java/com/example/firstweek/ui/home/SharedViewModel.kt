@@ -19,5 +19,8 @@ class SharedViewModel : ViewModel() {
         _deletedContact.value = contact
         _selectedContact.value = null
     }
-}
 
+    fun clearDeletedContact() {
+        _deletedContact.value = null
+    }
+}
