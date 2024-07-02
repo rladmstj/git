@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#122333</color>
-    <color name="colorPrimaryDark">#f12334</color>
+    <color name="colorPrimaryDark">#c5c5c5</color>
     <color name="colorAccent">#03DAC5</color>
 
     <color name="purple_200">#BB86FC</color>
     <color name="purple_500">#C5C5C5</color>
-    <color name="purple_700">#f12300</color>
+    <color name="purple_700">#c5c5c5</color>
     <color name="teal_200">#03DAC5</color>
     <color name="teal_700">#018786</color>
     <color name="black">#000000</color>
@@ -14,7 +14,7 @@
 
     <color name="bottom_nav_background">#FFFFFF</color> <!-- 배경색 -->
     <color name="bottom_nav_item_color">#000000</color> <!-- 아이템 기본 색상 -->
-    <color name="bottom_nav_item_color_selected">#FF0000</color> <!-- 아이템 선택된 색상 -->
+    <color name="bottom_nav_item_color_selected">#c5c5c5</color> <!-- 아이템 선택된 색상 -->
 
     <!-- 버튼 색상 정의 -->
     <color name="button_background">#808000</color> <!-- 보다 어두운 배경색 -->
