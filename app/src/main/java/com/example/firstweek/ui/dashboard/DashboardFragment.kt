@@ -69,8 +69,9 @@ class DashboardFragment : Fragment() {
         binding.buttonSave.setOnClickListener {
             val bitmap = binding.imagePreview.drawable.toBitmap()
             val croppedBitmap = cropToSquare(bitmap)
-            saveImageToSharedPreferences(croppedBitmap)
-            addImageToLayout(croppedBitmap)
+            val imageId = UUID.randomUUID().toString() // 고유한 ID 생성
+            saveImageToSharedPreferences(croppedBitmap, imageId)
+            addImageToLayout(croppedBitmap, imageId)
         }
 
         binding.buttonDelete.setOnClickListener {
@@ -105,13 +106,12 @@ class DashboardFragment : Fragment() {
         return Bitmap.createBitmap(bitmap, startX, startY, dimension, dimension)
     }
 
-    private fun saveImageToSharedPreferences(bitmap: Bitmap) {
+    private fun saveImageToSharedPreferences(bitmap: Bitmap, imageId: String) {
         val editor = sharedPreferences.edit()
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
-        val imageId = UUID.randomUUID().toString() // 고유한 ID 생성
         val existingImages = sharedPreferences.getStringSet("saved_images", mutableSetOf())?.toMutableSet()
         existingImages?.add(imageId)
         editor.putStringSet("saved_images", existingImages)
@@ -129,13 +129,14 @@ class DashboardFragment : Fragment() {
             if (encodedImage != null) {
                 val byteArray = Base64.decode(encodedImage, Base64.DEFAULT)
                 val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
-                addImageToLayout(bitmap)
+                addImageToLayout(bitmap, imageId)
             }
         }
     }
 
-    private fun addImageToLayout(bitmap: Bitmap) {
+    private fun addImageToLayout(bitmap: Bitmap, imageId: String) {
         val imageView = ImageView(requireContext()).apply {
+            tag = imageId
             setImageBitmap(bitmap)
             layoutParams = ViewGroup.MarginLayoutParams(
                 180.dpToPx(), // 너비를 180dp로 설정
@@ -165,12 +166,9 @@ class DashboardFragment : Fragment() {
         val existingImages = sharedPreferences.getStringSet("saved_images", mutableSetOf())?.toMutableSet()
 
         selectedImages.forEach { selectedImage ->
-            val bitmap = (selectedImage.drawable as BitmapDrawable).bitmap
-            val byteArrayOutputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
-            val byteArray = byteArrayOutputStream.toByteArray()
-            val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
-            existingImages?.remove(encodedImage)
+            val imageId = selectedImage.tag as String
+            existingImages?.remove(imageId)
+            sharedPreferences.edit().remove(imageId).apply()
             binding.layoutImage.removeView(selectedImage)
         }
 
@@ -179,9 +177,7 @@ class DashboardFragment : Fragment() {
     }
 
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_REQUEST_CODE) {
@@ -198,3 +194,5 @@ class DashboardFragment : Fragment() {
         _binding = null
     }
 }
+
+
