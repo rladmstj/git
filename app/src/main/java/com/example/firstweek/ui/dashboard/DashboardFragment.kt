@@ -7,21 +7,24 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
-import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentDashboardBinding
 import java.io.ByteArrayOutputStream
+import java.util.*
 
 class DashboardFragment : Fragment() {
 
@@ -32,10 +35,10 @@ class DashboardFragment : Fragment() {
     private val PERMISSION_REQUEST_CODE = 100
 
     private lateinit var sharedPreferences: SharedPreferences
+    private val imageViews = mutableListOf<ImageView>()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val dashboardViewModel =
@@ -46,8 +49,7 @@ class DashboardFragment : Fragment() {
 
         sharedPreferences = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
-        // 카메라 버튼 클릭 리스너 설정
-        binding.buttonCamera.setOnClickListener {
+        binding.imageDiaphragm.setOnClickListener {
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.CAMERA
@@ -63,12 +65,11 @@ class DashboardFragment : Fragment() {
             }
         }
 
-        binding.button3.setOnClickListener {
-            saveImageToSharedPreferences(binding.imagePreview.drawable.toBitmap())
-            val navController = findNavController()
-            navController.navigate(R.id.navigation_notifications)
+        binding.imageBin.setOnClickListener {
+            clearSelectedImagesFromLayout()
         }
 
+        loadImagesFromSharedPreferences()
         return root
     }
 
@@ -83,26 +84,96 @@ class DashboardFragment : Fragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as Bitmap
-            binding.imagePreview.setImageBitmap(imageBitmap)
+            val croppedBitmap = cropToSquare(imageBitmap)
+            val imageId = UUID.randomUUID().toString()
+            addImageToLayout(croppedBitmap, imageId)
+            saveImageToSharedPreferences(croppedBitmap, imageId)
         }
     }
 
-    private fun saveImageToSharedPreferences(bitmap: Bitmap) {
+    private fun cropToSquare(bitmap: Bitmap): Bitmap {
+        val dimension = Math.min(bitmap.width, bitmap.height)
+        val startX = (bitmap.width - dimension) / 2
+        val startY = (bitmap.height - dimension) / 2
+        return Bitmap.createBitmap(bitmap, startX, startY, dimension, dimension)
+    }
+
+    private fun saveImageToSharedPreferences(bitmap: Bitmap, imageId: String) {
         val editor = sharedPreferences.edit()
         val byteArrayOutputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
         val encodedImage = Base64.encodeToString(byteArray, Base64.DEFAULT)
         val existingImages = sharedPreferences.getStringSet("saved_images", mutableSetOf())?.toMutableSet()
-        existingImages?.add(encodedImage)
+        existingImages?.add(imageId)
         editor.putStringSet("saved_images", existingImages)
+        editor.putString(imageId, encodedImage)
         editor.apply()
     }
 
+    private fun loadImagesFromSharedPreferences() {
+        binding.layoutImage.removeAllViews()
+        imageViews.clear()
+
+        val savedImages = sharedPreferences.getStringSet("saved_images", emptySet())
+        savedImages?.forEach { imageId ->
+            val encodedImage = sharedPreferences.getString(imageId, null)
+            if (encodedImage != null) {
+                val byteArray = Base64.decode(encodedImage, Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+                addImageToLayout(bitmap, imageId)
+            }
+        }
+    }
+
+    private fun addImageToLayout(bitmap: Bitmap, imageId: String) {
+        val imageView = ImageView(requireContext()).apply {
+            tag = imageId
+            setImageBitmap(bitmap)
+            layoutParams = ViewGroup.MarginLayoutParams(
+                82.dpToPx(), // 너비를 82dp로 설정
+                82.dpToPx()  // 높이를 82dp로 설정
+            ).apply {
+                setMargins(1, 1, 1, 1)
+            }
+            setOnClickListener {
+                toggleImageSelection(this)
+            }
+        }
+        imageViews.add(imageView)
+        binding.layoutImage.addView(imageView)
+    }
+
+    private fun Int.dpToPx(): Int {
+        return (this * resources.displayMetrics.density).toInt()
+    }
+
+    private fun toggleImageSelection(imageView: ImageView) {
+        imageView.isSelected = !imageView.isSelected
+        imageView.alpha = if (imageView.isSelected) 0.5f else 1.0f
+
+        if (imageView.isSelected) {
+            Toast.makeText(requireContext(), "사진을 삭제하고 싶으면 휴지통을 누르세요", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun clearSelectedImagesFromLayout() {
+        val selectedImages = imageViews.filter { it.isSelected }
+        val existingImages = sharedPreferences.getStringSet("saved_images", mutableSetOf())?.toMutableSet()
+
+        selectedImages.forEach { selectedImage ->
+            val imageId = selectedImage.tag as String
+            existingImages?.remove(imageId)
+            sharedPreferences.edit().remove(imageId).apply()
+            binding.layoutImage.removeView(selectedImage)
+        }
+
+        sharedPreferences.edit().putStringSet("saved_images", existingImages).apply()
+        imageViews.removeAll(selectedImages)
+    }
+
     override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
+        requestCode: Int, permissions: Array<out String>, grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == PERMISSION_REQUEST_CODE) {
@@ -119,6 +190,4 @@ class DashboardFragment : Fragment() {
         _binding = null
     }
 }
-
-
 

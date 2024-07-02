@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
+    <color name="colorPrimary">#122333</color>
+    <color name="colorPrimaryDark">#f12334</color>
     <color name="colorAccent">#03DAC5</color>
 
     <color name="purple_200">#BB86FC</color>
-    <color name="purple_500">#FFFFFF</color>
-    <color name="purple_700">#3700B3</color>
+    <color name="purple_500">#C5C5C5</color>
+    <color name="purple_700">#f12300</color>
     <color name="teal_200">#03DAC5</color>
     <color name="teal_700">#018786</color>
     <color name="black">#000000</color>
@@ -18,5 +18,9 @@
 
     <!-- 버튼 색상 정의 -->
     <color name="button_background">#808000</color> <!-- 보다 어두운 배경색 -->
-    <color name="button_text_color">#FFFFFF</color> <!-- 대비되는 텍스트 색상 -->
+    <color name="button_text_color">#000000</color> <!-- 대비되는 텍스트 색상 -->
+
+    <color name="contactbutton">#dedede</color>
+
+    <color name="gray">#808080</color>
 </resources>

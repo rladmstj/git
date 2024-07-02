@@ -9,7 +9,19 @@
         android:id="@+id/navigation_home"
         android:name="com.example.firstweek.ui.home.HomeFragment"
         android:label="@string/title_home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home"
+        >
+        <action
+            android:id="@+id/action_navigation_home_to_contactsDetailFragment"
+            app:destination="@id/contactsDetailFragment">
+            <argument
+                android:name="contactName"
+                app:argType="string" />
+            <argument
+                android:name="contactPhone"
+                app:argType="string" />
+        </action>
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_dashboard"
@@ -22,4 +34,10 @@
         android:name="com.example.firstweek.ui.notifications.NotificationsFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_notifications" />
+
+    <fragment
+        android:id="@+id/contactsDetailFragment"
+        android:name="com.example.firstweek.ui.home.ContactDetailFragment"
+        tools:layout="@layout/fragment_contact_detail" />
+
 </navigation>
