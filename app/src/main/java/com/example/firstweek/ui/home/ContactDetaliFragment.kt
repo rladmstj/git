@@ -1,9 +1,12 @@
 package com.example.firstweek.ui.home
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -21,10 +24,18 @@ class ContactDetailFragment : Fragment() {
 
         val nameTextView: TextView = root.findViewById(R.id.nameTextView)
         val phoneTextView: TextView = root.findViewById(R.id.phoneTextView)
+        val callButton: Button = root.findViewById(R.id.callButton)
 
         sharedViewModel.selectedContact.observe(viewLifecycleOwner, { contact ->
             nameTextView.text = contact.name
             phoneTextView.text = contact.phone
+
+            callButton.setOnClickListener {
+                val intent = Intent(Intent.ACTION_DIAL).apply {
+                    data = Uri.parse("tel:${contact.phone}")
+                }
+                startActivity(intent)
+            }
         })
 
         return root
