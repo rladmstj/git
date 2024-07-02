@@ -2,26 +2,28 @@ package com.example.firstweek.ui.dashboard
 
 import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentDashboardBinding
 import java.io.ByteArrayOutputStream
 import java.util.*
@@ -35,7 +37,7 @@ class DashboardFragment : Fragment() {
     private val PERMISSION_REQUEST_CODE = 100
 
     private lateinit var sharedPreferences: SharedPreferences
-    private val imageViews = mutableListOf<ImageView>()
+    private val imageViews = mutableListOf<SelectableImageView>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -127,6 +129,7 @@ class DashboardFragment : Fragment() {
     }
 
     private fun addImageToLayout(bitmap: Bitmap, imageId: String) {
+        val frameLayout = FrameLayout(requireContext())
         val imageView = ImageView(requireContext()).apply {
             tag = imageId
             setImageBitmap(bitmap)
@@ -136,21 +139,45 @@ class DashboardFragment : Fragment() {
             ).apply {
                 setMargins(1, 1, 1, 1)
             }
-            setOnClickListener {
-                toggleImageSelection(this)
-            }
         }
-        imageViews.add(imageView)
-        binding.layoutImage.addView(imageView)
+        val checkImageView = ImageView(requireContext()).apply {
+            layoutParams = FrameLayout.LayoutParams(
+                24.dpToPx(),
+                24.dpToPx()
+            ).apply {
+                setMargins(0, 8.dpToPx(), 8.dpToPx(), 0)
+                gravity = android.view.Gravity.TOP or android.view.Gravity.END
+            }
+            setImageResource(R.drawable.ic_check) // 체크 이미지 리소스를 설정하십시오
+            visibility = View.INVISIBLE
+        }
+
+        val selectableImageView = SelectableImageView(imageView, checkImageView)
+        frameLayout.addView(imageView)
+        frameLayout.addView(checkImageView)
+
+        imageView.setOnClickListener {
+            showImageDialog(bitmap)
+        }
+
+        imageView.setOnLongClickListener {
+            toggleImageSelection(selectableImageView)
+            true
+        }
+
+        imageViews.add(selectableImageView)
+        binding.layoutImage.addView(frameLayout)
     }
 
     private fun Int.dpToPx(): Int {
         return (this * resources.displayMetrics.density).toInt()
     }
 
-    private fun toggleImageSelection(imageView: ImageView) {
+    private fun toggleImageSelection(selectableImageView: SelectableImageView) {
+        val imageView = selectableImageView.imageView
         imageView.isSelected = !imageView.isSelected
         imageView.alpha = if (imageView.isSelected) 0.5f else 1.0f
+        selectableImageView.checkImageView.visibility = if (imageView.isSelected) View.VISIBLE else View.INVISIBLE
 
         if (imageView.isSelected) {
             Toast.makeText(requireContext(), "사진을 삭제하고 싶으면 휴지통을 누르세요", Toast.LENGTH_SHORT).show()
@@ -158,18 +185,33 @@ class DashboardFragment : Fragment() {
     }
 
     private fun clearSelectedImagesFromLayout() {
-        val selectedImages = imageViews.filter { it.isSelected }
+        val selectedImages = imageViews.filter { it.imageView.isSelected }
         val existingImages = sharedPreferences.getStringSet("saved_images", mutableSetOf())?.toMutableSet()
 
         selectedImages.forEach { selectedImage ->
-            val imageId = selectedImage.tag as String
+            val imageId = selectedImage.imageView.tag as String
             existingImages?.remove(imageId)
             sharedPreferences.edit().remove(imageId).apply()
-            binding.layoutImage.removeView(selectedImage)
+            binding.layoutImage.removeView(selectedImage.imageView.parent as View)
         }
 
         sharedPreferences.edit().putStringSet("saved_images", existingImages).apply()
         imageViews.removeAll(selectedImages)
+    }
+
+    private fun showImageDialog(bitmap: Bitmap) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_image, null)
+        val imageView = dialogView.findViewById<ImageView>(R.id.dialog_image_view)
+        imageView.setImageBitmap(bitmap)
+
+        val alertDialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setPositiveButton("닫기") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .create()
+
+        alertDialog.show()
     }
 
     override fun onRequestPermissionsResult(
@@ -189,5 +231,6 @@ class DashboardFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
-}
 
+    data class SelectableImageView(val imageView: ImageView, val checkImageView: ImageView)
+}
