@@ -25,6 +25,7 @@ class ContactDetailFragment : Fragment() {
         val nameTextView: TextView = root.findViewById(R.id.nameTextView)
         val phoneTextView: TextView = root.findViewById(R.id.phoneTextView)
         val callIcon: ImageView = root.findViewById(R.id.callIcon)
+        val messageIcon: ImageView = root.findViewById(R.id.messageIcon)
 
         sharedViewModel.selectedContact.observe(viewLifecycleOwner, { contact ->
             nameTextView.text = contact.name
@@ -36,9 +37,17 @@ class ContactDetailFragment : Fragment() {
                 }
                 startActivity(intent)
             }
+
+            messageIcon.setOnClickListener {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("smsto:${contact.phone}")
+                }
+                startActivity(intent)
+            }
         })
 
         return root
     }
 }
+
 
