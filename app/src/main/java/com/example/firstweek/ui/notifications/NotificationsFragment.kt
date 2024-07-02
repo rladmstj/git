@@ -3,6 +3,7 @@ package com.example.firstweek.ui.notifications
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Paint
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -71,10 +72,12 @@ class NotificationsFragment : Fragment() {
             if (isChecked) {
                 editText.paintFlags = editText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
+                playSound(R.raw.yahoo)
                 Toast.makeText(requireContext(), "참 잘했어요!", Toast.LENGTH_SHORT).show()
             } else {
                 editText.paintFlags = editText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                playSound(R.raw.cathuh)
                 Toast.makeText(requireContext(), "깨비", Toast.LENGTH_SHORT).show()
             }
             saveTasks()
@@ -88,6 +91,14 @@ class NotificationsFragment : Fragment() {
         taskLayout.addView(checkBox)
         taskLayout.addView(editText)
         binding.tasksContainer.addView(taskLayout)
+    }
+
+    private fun playSound(resId: Int) {
+        val mediaPlayer = MediaPlayer.create(requireContext(), resId)
+        mediaPlayer.start()
+        mediaPlayer.setOnCompletionListener {
+            it.release()
+        }
     }
 
     private fun showDeleteConfirmationDialog(task: Task, taskLayout: LinearLayout) {
@@ -169,10 +180,12 @@ class NotificationsFragment : Fragment() {
             if (isChecked) {
                 editText.paintFlags = editText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
+                playSound(R.raw.yahoo)
                 Toast.makeText(requireContext(), "참 잘했어요!", Toast.LENGTH_SHORT).show()
             } else {
                 editText.paintFlags = editText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                playSound(R.raw.cathuh)
                 Toast.makeText(requireContext(), "깨비", Toast.LENGTH_SHORT).show()
             }
             saveTasks()
@@ -193,5 +206,6 @@ class NotificationsFragment : Fragment() {
         _binding = null
     }
 }
+
 
 
