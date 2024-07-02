@@ -93,6 +93,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentHomeBinding
@@ -106,7 +107,9 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var contactAdapter: ContactAdapter
     private var contactsList: MutableList<Contact> = mutableListOf()
-    private var isDataLoaded = false // 플래그 변수 추가
+    private var isDataLoaded = false
+
+    private val sharedViewModel: SharedViewModel by activityViewModels() // ViewModel 초기화
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -115,25 +118,19 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root = binding.root
 
-        // 데이터가 이미 로드되었는지 확인
         if (!isDataLoaded) {
             val jsonString = loadJSONFromRawResource(R.raw.contacts)
             parseJson(jsonString)
-            isDataLoaded = true // 데이터 로드 플래그 설정
+            isDataLoaded = true
         }
 
-        // 어댑터 설정
         contactAdapter = ContactAdapter(requireContext(), contactsList)
         binding.listView.adapter = contactAdapter
 
-        // 아이템 클릭 리스너 설정
         binding.listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
             val contact = contactsList[position]
-            val bundle = Bundle().apply {
-                putString("contactName", contact.name)
-                putString("contactPhone", contact.phone)
-            }
-            findNavController().navigate(R.id.contactsDetailFragment, bundle)
+            sharedViewModel.selectContact(contact) // 선택한 연락처를 ViewModel에 설정
+            findNavController().navigate(R.id.contactsDetailFragment)
         }
 
         return root
@@ -161,8 +158,6 @@ class HomeFragment : Fragment() {
                     val jsonObject: JSONObject = jsonArray.getJSONObject(i)
                     val name = jsonObject.getString("name")
                     val phone = jsonObject.getString("phone")
-
-                    // 중복 항목이 있는지 확인하고 추가
                     if (!contactsList.any { contact -> contact.name == name && contact.phone == phone }) {
                         contactsList.add(Contact(name, phone))
                     }
@@ -173,5 +168,4 @@ class HomeFragment : Fragment() {
         }
     }
 }
-
 
