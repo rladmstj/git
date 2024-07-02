@@ -16,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
@@ -37,8 +38,7 @@ class DashboardFragment : Fragment() {
     private val imageViews = mutableListOf<ImageView>()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val dashboardViewModel =
@@ -49,8 +49,7 @@ class DashboardFragment : Fragment() {
 
         sharedPreferences = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
-        // 카메라 버튼 클릭 리스너 설정
-        binding.buttonCamera.setOnClickListener {
+        binding.imageDiaphragm.setOnClickListener {
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.CAMERA
@@ -66,20 +65,11 @@ class DashboardFragment : Fragment() {
             }
         }
 
-        binding.buttonSave.setOnClickListener {
-            val bitmap = binding.imagePreview.drawable.toBitmap()
-            val croppedBitmap = cropToSquare(bitmap)
-            val imageId = UUID.randomUUID().toString() // 고유한 ID 생성
-            saveImageToSharedPreferences(croppedBitmap, imageId)
-            addImageToLayout(croppedBitmap, imageId)
-        }
-
-        binding.buttonDelete.setOnClickListener {
+        binding.imageBin.setOnClickListener {
             clearSelectedImagesFromLayout()
         }
 
         loadImagesFromSharedPreferences()
-
         return root
     }
 
@@ -95,7 +85,9 @@ class DashboardFragment : Fragment() {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as Bitmap
             val croppedBitmap = cropToSquare(imageBitmap)
-            binding.imagePreview.setImageBitmap(croppedBitmap)
+            val imageId = UUID.randomUUID().toString()
+            addImageToLayout(croppedBitmap, imageId)
+            saveImageToSharedPreferences(croppedBitmap, imageId)
         }
     }
 
@@ -139,8 +131,8 @@ class DashboardFragment : Fragment() {
             tag = imageId
             setImageBitmap(bitmap)
             layoutParams = ViewGroup.MarginLayoutParams(
-                180.dpToPx(), // 너비를 180dp로 설정
-                180.dpToPx()  // 높이를 180dp로 설정
+                82.dpToPx(), // 너비를 82dp로 설정
+                82.dpToPx()  // 높이를 82dp로 설정
             ).apply {
                 setMargins(1, 1, 1, 1)
             }
@@ -159,6 +151,10 @@ class DashboardFragment : Fragment() {
     private fun toggleImageSelection(imageView: ImageView) {
         imageView.isSelected = !imageView.isSelected
         imageView.alpha = if (imageView.isSelected) 0.5f else 1.0f
+
+        if (imageView.isSelected) {
+            Toast.makeText(requireContext(), "사진을 삭제하고 싶으면 휴지통을 누르세요", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun clearSelectedImagesFromLayout() {
@@ -194,5 +190,4 @@ class DashboardFragment : Fragment() {
         _binding = null
     }
 }
-
 
