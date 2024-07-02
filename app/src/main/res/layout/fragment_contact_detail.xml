@@ -80,8 +80,8 @@
 
     <Button
         android:id="@+id/button2"
-        android:layout_width="213dp"
-        android:layout_height="52dp"
+        android:layout_width="180dp"
+        android:layout_height="45dp"
         android:layout_marginTop="324dp"
         android:background="@drawable/button_background"
         android:backgroundTint="@color/contactbutton"
@@ -96,12 +96,14 @@
 
     <Button
         android:id="@+id/button_edit"
-        android:layout_width="213dp"
-        android:layout_height="52dp"
+        android:layout_width="180dp"
+        android:layout_height="45dp"
         android:layout_marginTop="16dp"
         android:background="@drawable/button_background"
         android:backgroundTint="@color/contactbutton"
-        android:text="Edit"
+        android:text="연락처 수정"
+        android:fontFamily="sans-serif"
+        android:textSize="20sp"
         android:textColorLink="#8D5555"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.489"
