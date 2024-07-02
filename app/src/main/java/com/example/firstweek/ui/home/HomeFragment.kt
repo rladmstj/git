@@ -84,6 +84,7 @@
 //        }
 //    }
 //}
+
 package com.example.firstweek.ui.home
 
 import android.os.Bundle
@@ -93,11 +94,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentHomeBinding
-
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -136,9 +137,16 @@ class HomeFragment : Fragment() {
 
         // 새로운 연락처를 받아 추가하는 로직
         findNavController().getBackStackEntry(R.id.navigation_home).savedStateHandle.getLiveData<Contact>("newContact")
-            .observe(viewLifecycleOwner) { newContact ->
+            .observe(viewLifecycleOwner, Observer { newContact ->
                 addContact(newContact)
+            })
+
+        // 삭제된 연락처를 받아 삭제하는 로직
+        sharedViewModel.deletedContact.observe(viewLifecycleOwner, Observer { deletedContact ->
+            deletedContact?.let {
+                removeContact(it)
             }
+        })
 
         return root
     }
@@ -199,6 +207,20 @@ class HomeFragment : Fragment() {
         sortContacts()
         contactAdapter.notifyDataSetChanged()
         saveContactsToJSON()
+    }
+
+    fun removeContact(contact: Contact) {
+        val iterator = contactsList.iterator()
+        while (iterator.hasNext()) {
+            val item = iterator.next()
+            if (item.getName() == contact.getName() && item.getPhone() == contact.getPhone()) {
+                iterator.remove()
+                contactAdapter.notifyDataSetChanged()
+                saveContactsToJSON()
+                Log.d("HomeFragment", "Contact removed: ${contact.getName()} - ${contact.getPhone()}")
+                break
+            }
+        }
     }
 
     private fun sortContacts() {

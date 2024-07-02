@@ -1,53 +1,49 @@
 package com.example.firstweek.ui.home
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import com.example.firstweek.R
+import androidx.navigation.fragment.findNavController
+import com.example.firstweek.databinding.FragmentContactDetailBinding
+
 
 class ContactDetailFragment : Fragment() {
-
-    private val sharedViewModel: SharedViewModel by activityViewModels() // ViewModel 초기화
+    private var _binding: FragmentContactDetailBinding? = null
+    private val binding get() = _binding!!
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val root = inflater.inflate(R.layout.fragment_contact_detail, container, false)
+        _binding = FragmentContactDetailBinding.inflate(inflater, container, false)
+        val root = binding.root
 
-        val nameTextView: TextView = root.findViewById(R.id.nameTextView)
-        val phoneTextView: TextView = root.findViewById(R.id.phoneTextView)
-        val callIcon: ImageView = root.findViewById(R.id.callIcon)
-        val messageIcon: ImageView = root.findViewById(R.id.messageIcon)
-
-        sharedViewModel.selectedContact.observe(viewLifecycleOwner, { contact ->
-            nameTextView.text = contact.name
-            phoneTextView.text = contact.phone
-
-            callIcon.setOnClickListener {
-                val intent = Intent(Intent.ACTION_DIAL).apply {
-                    data = Uri.parse("tel:${contact.phone}")
-                }
-                startActivity(intent)
+        sharedViewModel.selectedContact.observe(viewLifecycleOwner) { contact ->
+            contact?.let {
+                binding.nameTextView.text = it.getName()
+                binding.phoneTextView.text = it.getPhone()
             }
+        }
 
-            messageIcon.setOnClickListener {
-                val intent = Intent(Intent.ACTION_SENDTO).apply {
-                    data = Uri.parse("smsto:${contact.phone}")
-                }
-                startActivity(intent)
+        binding.button2.setOnClickListener {
+            sharedViewModel.selectedContact.value?.let { contact ->
+                sharedViewModel.deleteContact(contact)
+                findNavController().popBackStack()
+                Toast.makeText(requireContext(), "Contact deleted", Toast.LENGTH_SHORT).show()
             }
-        })
+        }
 
         return root
     }
-}
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
 
