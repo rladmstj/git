@@ -84,6 +84,7 @@
 //        }
 //    }
 //}
+
 package com.example.firstweek.ui.home
 
 import android.os.Bundle
@@ -93,11 +94,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentHomeBinding
-
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -110,7 +111,7 @@ class HomeFragment : Fragment() {
     private lateinit var contactAdapter: ContactAdapter
     private var contactsList: MutableList<Contact> = mutableListOf()
 
-    private val sharedViewModel: SharedViewModel by activityViewModels() // ViewModel 초기화
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -120,9 +121,10 @@ class HomeFragment : Fragment() {
         val root = binding.root
 
         loadContactsFromFile()
+        sortContacts()
 
         contactAdapter = ContactAdapter(requireContext(), contactsList) { contact ->
-            sharedViewModel.selectContact(contact) // 선택한 연락처를 ViewModel에 설정
+            sharedViewModel.selectContact(contact)
             findNavController().navigate(R.id.contactsDetailFragment)
         }
 
@@ -135,9 +137,22 @@ class HomeFragment : Fragment() {
 
         // 새로운 연락처를 받아 추가하는 로직
         findNavController().getBackStackEntry(R.id.navigation_home).savedStateHandle.getLiveData<Contact>("newContact")
-            .observe(viewLifecycleOwner) { newContact ->
-                addContact(newContact)
+            .observe(viewLifecycleOwner, Observer { newContact ->
+                newContact?.let {
+                    if (!contactsList.contains(it)) {
+                        addContact(it)
+                        findNavController().getBackStackEntry(R.id.navigation_home).savedStateHandle.set("newContact", null)
+                    }
+                }
+            })
+
+        // 삭제된 연락처를 받아 삭제하는 로직
+        sharedViewModel.deletedContact.observe(viewLifecycleOwner, Observer { deletedContact ->
+            deletedContact?.let {
+                removeContact(it)
+                sharedViewModel.clearDeletedContact()
             }
+        })
 
         return root
     }
@@ -176,15 +191,16 @@ class HomeFragment : Fragment() {
         jsonString?.let {
             try {
                 val jsonArray = JSONArray(it)
-                contactsList.clear() // 기존 연락처 목록을 지우고 새로 로드
+                contactsList.clear()
                 for (i in 0 until jsonArray.length()) {
-                    val jsonObject: JSONObject = jsonArray.getJSONObject(i)
+                    val jsonObject = jsonArray.getJSONObject(i)
                     val name = jsonObject.getString("name")
                     val phone = jsonObject.getString("phone")
                     if (!contactsList.any { contact -> contact.getName() == name && contact.getPhone() == phone }) {
                         contactsList.add(Contact(name, phone))
                     }
                 }
+                sortContacts()
                 Log.d("HomeFragment", "Contacts loaded: ${contactsList.size}")
             } catch (e: Exception) {
                 Log.e("HomeFragment", "Error parsing JSON", e)
@@ -194,8 +210,28 @@ class HomeFragment : Fragment() {
 
     fun addContact(contact: Contact) {
         contactsList.add(contact)
-        contactAdapter.notifyItemInserted(contactsList.size - 1)
+        sortContacts()
+        contactAdapter.notifyDataSetChanged()
         saveContactsToJSON()
+    }
+
+    fun removeContact(contact: Contact) {
+        Log.d("HomeFragment", "Trying to remove contact: ${contact.getName()} - ${contact.getPhone()}")
+        val iterator = contactsList.iterator()
+        while (iterator.hasNext()) {
+            val item = iterator.next()
+            if (item.getName() == contact.getName() && item.getPhone() == contact.getPhone()) {
+                iterator.remove()
+                contactAdapter.notifyDataSetChanged()
+                saveContactsToJSON()
+                Log.d("HomeFragment", "Contact removed: ${contact.getName()} - ${contact.getPhone()}")
+                break
+            }
+        }
+    }
+
+    private fun sortContacts() {
+        contactsList.sortBy { it.getName() }
     }
 
     private fun saveContactsToJSON() {

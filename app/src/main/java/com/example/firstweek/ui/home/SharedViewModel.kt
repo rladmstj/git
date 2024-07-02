@@ -5,19 +5,22 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class SharedViewModel : ViewModel() {
+    private val _selectedContact = MutableLiveData<Contact?>()
+    val selectedContact: LiveData<Contact?> get() = _selectedContact
 
-    private val _contacts = MutableLiveData<List<Contact>>()
-    val contacts: LiveData<List<Contact>> get() = _contacts
-
-    private val _selectedContact = MutableLiveData<Contact>()
-    val selectedContact: LiveData<Contact> get() = _selectedContact
-
-    fun setContacts(contacts: List<Contact>) {
-        _contacts.value = contacts
-    }
+    private val _deletedContact = MutableLiveData<Contact?>()
+    val deletedContact: LiveData<Contact?> get() = _deletedContact
 
     fun selectContact(contact: Contact) {
         _selectedContact.value = contact
     }
-}
 
+    fun deleteContact(contact: Contact) {
+        _deletedContact.value = contact
+        _selectedContact.value = null
+    }
+
+    fun clearDeletedContact() {
+        _deletedContact.value = null
+    }
+}
