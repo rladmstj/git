@@ -152,9 +152,10 @@ class HomeFragment : Fragment() {
             }
         })
 
-        sharedViewModel.selectedContact.observe(viewLifecycleOwner, Observer { updatedContact ->
-            updatedContact?.let {
-                updateContact(it)
+        sharedViewModel.updatedContact.observe(viewLifecycleOwner, Observer { updatedContact ->
+            updatedContact?.let { (oldContact, newContact) ->
+                updateContact(oldContact, newContact)
+                sharedViewModel.clearUpdatedContact()
             }
         })
 
@@ -234,14 +235,14 @@ class HomeFragment : Fragment() {
         }
     }
 
-    fun updateContact(updatedContact: Contact) {
-        Log.d("HomeFragment", "Trying to update contact: ${updatedContact.getName()} - ${updatedContact.getPhone()}")
-        val index = contactsList.indexOfFirst { it.getName() == updatedContact.getName() && it.getPhone() == updatedContact.getPhone() }
+    fun updateContact(oldContact: Contact, newContact: Contact) {
+        Log.d("HomeFragment", "Trying to update contact: ${oldContact.getName()} - ${oldContact.getPhone()} to ${newContact.getName()} - ${newContact.getPhone()}")
+        val index = contactsList.indexOfFirst { it.getName() == oldContact.getName() && it.getPhone() == oldContact.getPhone() }
         if (index != -1) {
-            contactsList[index] = updatedContact
+            contactsList[index] = newContact
             contactAdapter.notifyItemChanged(index)
             saveContactsToJSON()
-            Log.d("HomeFragment", "Contact updated: ${updatedContact.getName()} - ${updatedContact.getPhone()}")
+            Log.d("HomeFragment", "Contact updated: ${newContact.getName()} - ${newContact.getPhone()}")
         }
     }
 
@@ -267,4 +268,3 @@ class HomeFragment : Fragment() {
         }
     }
 }
-

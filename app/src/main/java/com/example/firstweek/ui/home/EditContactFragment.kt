@@ -10,6 +10,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.example.firstweek.databinding.FragmentEditContactBinding
 
+
 class EditContactFragment : Fragment() {
     private var _binding: FragmentEditContactBinding? = null
     private val binding get() = _binding!!

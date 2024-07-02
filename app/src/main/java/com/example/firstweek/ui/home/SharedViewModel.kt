@@ -11,6 +11,9 @@ class SharedViewModel : ViewModel() {
     private val _deletedContact = MutableLiveData<Contact?>()
     val deletedContact: LiveData<Contact?> get() = _deletedContact
 
+    private val _updatedContact = MutableLiveData<Pair<Contact, Contact>?>()
+    val updatedContact: LiveData<Pair<Contact, Contact>?> get() = _updatedContact
+
     fun selectContact(contact: Contact) {
         _selectedContact.value = contact
     }
@@ -25,8 +28,11 @@ class SharedViewModel : ViewModel() {
     }
 
     fun updateContact(oldContact: Contact, newContact: Contact) {
+        _updatedContact.value = Pair(oldContact, newContact)
         _selectedContact.value = newContact
-        // Update the contact in the list in HomeFragment
-        _deletedContact.value = oldContact
+    }
+
+    fun clearUpdatedContact() {
+        _updatedContact.value = null
     }
 }
