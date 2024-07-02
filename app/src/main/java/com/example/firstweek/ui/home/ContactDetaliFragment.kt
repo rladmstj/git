@@ -1,28 +1,20 @@
 package com.example.firstweek.ui.home
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import com.example.firstweek.R
 
 class ContactDetailFragment : Fragment() {
 
-    companion object {
-        private const val ARG_NAME = "name"
-        private const val ARG_PHONE = "phone"
-
-        fun newInstance(name: String, phone: String): ContactDetailFragment {
-            val fragment = ContactDetailFragment()
-            val args = Bundle()
-            args.putString(ARG_NAME, name)
-            args.putString(ARG_PHONE, phone)
-            fragment.arguments = args
-            return fragment
-        }
-    }
+    private val sharedViewModel: SharedViewModel by activityViewModels() // ViewModel 초기화
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,11 +24,19 @@ class ContactDetailFragment : Fragment() {
 
         val nameTextView: TextView = root.findViewById(R.id.nameTextView)
         val phoneTextView: TextView = root.findViewById(R.id.phoneTextView)
+        val callButton: Button = root.findViewById(R.id.callButton)
 
-        arguments?.let {
-            nameTextView.text = it.getString(ARG_NAME)
-            phoneTextView.text = it.getString(ARG_PHONE)
-        }
+        sharedViewModel.selectedContact.observe(viewLifecycleOwner, { contact ->
+            nameTextView.text = contact.name
+            phoneTextView.text = contact.phone
+
+            callButton.setOnClickListener {
+                val intent = Intent(Intent.ACTION_DIAL).apply {
+                    data = Uri.parse("tel:${contact.phone}")
+                }
+                startActivity(intent)
+            }
+        })
 
         return root
     }

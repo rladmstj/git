@@ -66,4 +66,7 @@ dependencies {
     // Safe Args를 위해 필요한 의존성 추가
     implementation("androidx.navigation:navigation-fragment-ktx:")
     implementation("androidx.navigation:navigation-ui-ktx:")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
   }
