@@ -6,7 +6,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -24,15 +24,23 @@ class ContactDetailFragment : Fragment() {
 
         val nameTextView: TextView = root.findViewById(R.id.nameTextView)
         val phoneTextView: TextView = root.findViewById(R.id.phoneTextView)
-        val callButton: Button = root.findViewById(R.id.callButton)
+        val callIcon: ImageView = root.findViewById(R.id.callIcon)
+        val messageIcon: ImageView = root.findViewById(R.id.messageIcon)
 
         sharedViewModel.selectedContact.observe(viewLifecycleOwner, { contact ->
             nameTextView.text = contact.name
             phoneTextView.text = contact.phone
 
-            callButton.setOnClickListener {
+            callIcon.setOnClickListener {
                 val intent = Intent(Intent.ACTION_DIAL).apply {
                     data = Uri.parse("tel:${contact.phone}")
+                }
+                startActivity(intent)
+            }
+
+            messageIcon.setOnClickListener {
+                val intent = Intent(Intent.ACTION_SENDTO).apply {
+                    data = Uri.parse("smsto:${contact.phone}")
                 }
                 startActivity(intent)
             }
@@ -41,3 +49,5 @@ class ContactDetailFragment : Fragment() {
         return root
     }
 }
+
+
