@@ -120,6 +120,7 @@ class HomeFragment : Fragment() {
         val root = binding.root
 
         loadContactsFromFile()
+        sortContacts()
 
         contactAdapter = ContactAdapter(requireContext(), contactsList) { contact ->
             sharedViewModel.selectContact(contact) // 선택한 연락처를 ViewModel에 설정
@@ -185,6 +186,7 @@ class HomeFragment : Fragment() {
                         contactsList.add(Contact(name, phone))
                     }
                 }
+                sortContacts()
                 Log.d("HomeFragment", "Contacts loaded: ${contactsList.size}")
             } catch (e: Exception) {
                 Log.e("HomeFragment", "Error parsing JSON", e)
@@ -194,8 +196,13 @@ class HomeFragment : Fragment() {
 
     fun addContact(contact: Contact) {
         contactsList.add(contact)
-        contactAdapter.notifyItemInserted(contactsList.size - 1)
+        sortContacts()
+        contactAdapter.notifyDataSetChanged()
         saveContactsToJSON()
+    }
+
+    private fun sortContacts() {
+        contactsList.sortBy { it.getName() }
     }
 
     private fun saveContactsToJSON() {
