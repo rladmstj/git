@@ -91,10 +91,11 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentHomeBinding
 import org.json.JSONArray
@@ -124,14 +125,13 @@ class HomeFragment : Fragment() {
             isDataLoaded = true
         }
 
-        contactAdapter = ContactAdapter(requireContext(), contactsList)
-        binding.listView.adapter = contactAdapter
-
-        binding.listView.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            val contact = contactsList[position]
+        contactAdapter = ContactAdapter(requireContext(), contactsList) { contact ->
             sharedViewModel.selectContact(contact) // 선택한 연락처를 ViewModel에 설정
             findNavController().navigate(R.id.contactsDetailFragment)
         }
+
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.adapter = contactAdapter
 
         return root
     }
