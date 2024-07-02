@@ -23,4 +23,10 @@ class SharedViewModel : ViewModel() {
     fun clearDeletedContact() {
         _deletedContact.value = null
     }
+
+    fun updateContact(oldContact: Contact, newContact: Contact) {
+        _selectedContact.value = newContact
+        // Update the contact in the list in HomeFragment
+        _deletedContact.value = oldContact
+    }
 }

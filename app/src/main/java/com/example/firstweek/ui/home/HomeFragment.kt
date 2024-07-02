@@ -99,7 +99,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentHomeBinding
-import org.json.JSONArray
+ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.InputStream
@@ -135,7 +135,6 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.addContactFragment)
         }
 
-        // 새로운 연락처를 받아 추가하는 로직
         findNavController().getBackStackEntry(R.id.navigation_home).savedStateHandle.getLiveData<Contact>("newContact")
             .observe(viewLifecycleOwner, Observer { newContact ->
                 newContact?.let {
@@ -146,11 +145,16 @@ class HomeFragment : Fragment() {
                 }
             })
 
-        // 삭제된 연락처를 받아 삭제하는 로직
         sharedViewModel.deletedContact.observe(viewLifecycleOwner, Observer { deletedContact ->
             deletedContact?.let {
                 removeContact(it)
                 sharedViewModel.clearDeletedContact()
+            }
+        })
+
+        sharedViewModel.selectedContact.observe(viewLifecycleOwner, Observer { updatedContact ->
+            updatedContact?.let {
+                updateContact(it)
             }
         })
 
@@ -230,6 +234,17 @@ class HomeFragment : Fragment() {
         }
     }
 
+    fun updateContact(updatedContact: Contact) {
+        Log.d("HomeFragment", "Trying to update contact: ${updatedContact.getName()} - ${updatedContact.getPhone()}")
+        val index = contactsList.indexOfFirst { it.getName() == updatedContact.getName() && it.getPhone() == updatedContact.getPhone() }
+        if (index != -1) {
+            contactsList[index] = updatedContact
+            contactAdapter.notifyItemChanged(index)
+            saveContactsToJSON()
+            Log.d("HomeFragment", "Contact updated: ${updatedContact.getName()} - ${updatedContact.getPhone()}")
+        }
+    }
+
     private fun sortContacts() {
         contactsList.sortBy { it.getName() }
     }
@@ -252,3 +267,4 @@ class HomeFragment : Fragment() {
         }
     }
 }
+

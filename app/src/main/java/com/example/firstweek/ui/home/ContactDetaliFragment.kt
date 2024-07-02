@@ -8,7 +8,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentContactDetailBinding
+
 
 class ContactDetailFragment : Fragment() {
     private var _binding: FragmentContactDetailBinding? = null
@@ -37,6 +39,10 @@ class ContactDetailFragment : Fragment() {
             }
         }
 
+        binding.buttonEdit.setOnClickListener {
+            findNavController().navigate(R.id.editContactFragment)
+        }
+
         return root
     }
 
@@ -45,3 +51,4 @@ class ContactDetailFragment : Fragment() {
         _binding = null
     }
 }
+
