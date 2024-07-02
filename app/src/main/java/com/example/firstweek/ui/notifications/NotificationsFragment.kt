@@ -10,6 +10,8 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.firstweek.R
@@ -67,23 +69,38 @@ class NotificationsFragment : Fragment() {
             if (isChecked) {
                 editText.paintFlags = editText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
+                Toast.makeText(requireContext(), "Task completed", Toast.LENGTH_SHORT).show()
             } else {
                 editText.paintFlags = editText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                Toast.makeText(requireContext(), "Task uncompleted", Toast.LENGTH_SHORT).show()
             }
             saveTasks()
         }
 
         editText.setOnLongClickListener {
-            tasks.remove(task)
-            binding.tasksContainer.removeView(taskLayout)
-            saveTasks()
+            showDeleteConfirmationDialog(task, taskLayout)
             true
         }
 
         taskLayout.addView(checkBox)
         taskLayout.addView(editText)
         binding.tasksContainer.addView(taskLayout)
+    }
+
+    private fun showDeleteConfirmationDialog(task: Task, taskLayout: LinearLayout) {
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setMessage("Do you want to delete this task?")
+            .setPositiveButton("Yes") { dialog, id ->
+                tasks.remove(task)
+                binding.tasksContainer.removeView(taskLayout)
+                saveTasks()
+                Toast.makeText(requireContext(), "Task deleted", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("No") { dialog, id ->
+                dialog.dismiss()
+            }
+        builder.create().show()
     }
 
     private fun saveTasks() {
@@ -140,17 +157,17 @@ class NotificationsFragment : Fragment() {
             if (isChecked) {
                 editText.paintFlags = editText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
+                Toast.makeText(requireContext(), "Task completed", Toast.LENGTH_SHORT).show()
             } else {
                 editText.paintFlags = editText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
+                Toast.makeText(requireContext(), "Task uncompleted", Toast.LENGTH_SHORT).show()
             }
             saveTasks()
         }
 
         editText.setOnLongClickListener {
-            tasks.remove(task)
-            binding.tasksContainer.removeView(taskLayout)
-            saveTasks()
+            showDeleteConfirmationDialog(task, taskLayout)
             true
         }
 
@@ -164,4 +181,5 @@ class NotificationsFragment : Fragment() {
         _binding = null
     }
 }
+
 
