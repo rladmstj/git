@@ -6,6 +6,12 @@
     app:startDestination="@+id/navigation_home">
 
     <fragment
+        android:id="@+id/addContactFragment"
+        android:name="com.example.firstweek.ui.home.AddContactFragment"
+        android:label="Add Contact"
+        tools:layout="@layout/fragment_add_contact" />
+
+    <fragment
         android:id="@+id/navigation_home"
         android:name="com.example.firstweek.ui.home.HomeFragment"
         android:label="@string/title_home"

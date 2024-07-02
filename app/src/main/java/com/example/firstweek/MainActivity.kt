@@ -14,6 +14,8 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.firstweek.databinding.ActivityMainBinding
+import com.example.firstweek.ui.home.Contact
+import com.example.firstweek.ui.home.HomeFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -49,6 +51,12 @@ class MainActivity : AppCompatActivity() {
                     navController.popBackStack(R.id.navigation_home, false)
                 }
             }
+        }
+    }
+    fun addContact(contact: Contact) {
+        val fragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main)
+        if (fragment is HomeFragment) {
+            fragment.addContact(contact)
         }
     }
 
