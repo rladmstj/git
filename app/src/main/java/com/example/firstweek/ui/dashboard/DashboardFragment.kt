@@ -189,7 +189,7 @@ class DashboardFragment : Fragment() {
         selectableImageView.checkImageView.visibility = if (imageView.isSelected) View.VISIBLE else View.INVISIBLE
 
         if (imageView.isSelected) {
-            showToast("사진을 삭제하고 싶으면 휴지통을 누르세요")
+            showToast("사진을 삭제하려면 휴지통을 누르고 갤러리에 저장하려면 화살표를 누르세요")
         }
     }
 
