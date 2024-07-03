@@ -9,15 +9,16 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -26,6 +27,10 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentDashboardBinding
 import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.OutputStream
 import java.util.*
 
 class DashboardFragment : Fragment() {
@@ -69,6 +74,10 @@ class DashboardFragment : Fragment() {
 
         binding.imageBin.setOnClickListener {
             clearSelectedImagesFromLayout()
+        }
+
+        binding.exit.setOnClickListener {
+            saveSelectedImagesToGallery()
         }
 
         loadImagesFromSharedPreferences()
@@ -180,8 +189,15 @@ class DashboardFragment : Fragment() {
         selectableImageView.checkImageView.visibility = if (imageView.isSelected) View.VISIBLE else View.INVISIBLE
 
         if (imageView.isSelected) {
-            Toast.makeText(requireContext(), "사진을 삭제하고 싶으면 휴지통을 누르세요", Toast.LENGTH_SHORT).show()
+            showToast("사진을 삭제하고 싶으면 휴지통을 누르세요")
         }
+    }
+
+    private fun showToast(message: String) {
+        val toast = Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT)
+        val yOffset = binding.imageBin.height + binding.imageDiaphragm.height + 16.dpToPx()
+        toast.setGravity(Gravity.TOP or Gravity.CENTER_HORIZONTAL, 0, yOffset)
+        toast.show()
     }
 
     private fun clearSelectedImagesFromLayout() {
@@ -212,6 +228,42 @@ class DashboardFragment : Fragment() {
             .create()
 
         alertDialog.show()
+    }
+
+    private fun saveSelectedImagesToGallery() {
+        val selectedImages = imageViews.filter { it.imageView.isSelected }
+
+        selectedImages.forEach { selectedImage ->
+            val bitmap = (selectedImage.imageView.drawable as BitmapDrawable).bitmap
+            saveImageToGallery(bitmap)
+        }
+        showToast("선택된 이미지가 갤러리에 저장되었습니다.")
+    }
+
+    private fun saveImageToGallery(bitmap: Bitmap) {
+        val filename = "${UUID.randomUUID()}.png"
+        val fos: OutputStream
+        try {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                val resolver = requireContext().contentResolver
+                val contentValues = android.content.ContentValues().apply {
+                    put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, filename)
+                    put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/png")
+                    put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES)
+                }
+                val imageUri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                fos = resolver.openOutputStream(imageUri!!)!!
+            } else {
+                val imagesDir = requireContext().getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
+                val image = File(imagesDir, filename)
+                fos = FileOutputStream(image)
+            }
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+            fos.flush()
+            fos.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     override fun onRequestPermissionsResult(

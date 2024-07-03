@@ -43,5 +43,16 @@
         android:src="@drawable/diaphragm"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <ImageView
+        android:id="@+id/exit"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginBottom="8dp"
+        android:src="@drawable/arrow"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/imageDiaphragm"
+        app:layout_constraintStart_toEndOf="@+id/imageBin" />
 </androidx.constraintlayout.widget.ConstraintLayout>
+
 
