@@ -88,18 +88,20 @@
 package com.example.firstweek.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentHomeBinding
-import org.json.JSONArray
+ import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
 import java.io.InputStream
 import java.nio.charset.Charset
 
@@ -108,9 +110,8 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var contactAdapter: ContactAdapter
     private var contactsList: MutableList<Contact> = mutableListOf()
-    private var isDataLoaded = false
 
-    private val sharedViewModel: SharedViewModel by activityViewModels() // ViewModel 초기화
+    private val sharedViewModel: SharedViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -119,19 +120,44 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root = binding.root
 
-        if (!isDataLoaded) {
-            val jsonString = loadJSONFromRawResource(R.raw.contacts)
-            parseJson(jsonString)
-            isDataLoaded = true
-        }
+        loadContactsFromFile()
+        sortContacts()
 
         contactAdapter = ContactAdapter(requireContext(), contactsList) { contact ->
-            sharedViewModel.selectContact(contact) // 선택한 연락처를 ViewModel에 설정
+            sharedViewModel.selectContact(contact)
             findNavController().navigate(R.id.contactsDetailFragment)
         }
 
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerView.adapter = contactAdapter
+
+        binding.floatingActionButton5.setOnClickListener {
+            findNavController().navigate(R.id.addContactFragment)
+        }
+
+        findNavController().getBackStackEntry(R.id.navigation_home).savedStateHandle.getLiveData<Contact>("newContact")
+            .observe(viewLifecycleOwner, Observer { newContact ->
+                newContact?.let {
+                    if (!contactsList.contains(it)) {
+                        addContact(it)
+                        findNavController().getBackStackEntry(R.id.navigation_home).savedStateHandle.set("newContact", null)
+                    }
+                }
+            })
+
+        sharedViewModel.deletedContact.observe(viewLifecycleOwner, Observer { deletedContact ->
+            deletedContact?.let {
+                removeContact(it)
+                sharedViewModel.clearDeletedContact()
+            }
+        })
+
+        sharedViewModel.updatedContact.observe(viewLifecycleOwner, Observer { updatedContact ->
+            updatedContact?.let { (oldContact, newContact) ->
+                updateContact(oldContact, newContact)
+                sharedViewModel.clearUpdatedContact()
+            }
+        })
 
         return root
     }
@@ -139,6 +165,22 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun loadContactsFromFile() {
+        try {
+            val file = File(requireContext().filesDir, "contacts.json")
+            val jsonString: String? = if (file.exists()) {
+                Log.d("HomeFragment", "Loading contacts from file")
+                file.readText()
+            } else {
+                Log.d("HomeFragment", "Loading contacts from raw resource")
+                loadJSONFromRawResource(R.raw.contacts)
+            }
+            parseJson(jsonString)
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "Error loading contacts from file", e)
+        }
     }
 
     private fun loadJSONFromRawResource(resourceId: Int): String? {
@@ -154,18 +196,75 @@ class HomeFragment : Fragment() {
         jsonString?.let {
             try {
                 val jsonArray = JSONArray(it)
+                contactsList.clear()
                 for (i in 0 until jsonArray.length()) {
-                    val jsonObject: JSONObject = jsonArray.getJSONObject(i)
+                    val jsonObject = jsonArray.getJSONObject(i)
                     val name = jsonObject.getString("name")
                     val phone = jsonObject.getString("phone")
-                    if (!contactsList.any { contact -> contact.name == name && contact.phone == phone }) {
+                    if (!contactsList.any { contact -> contact.getName() == name && contact.getPhone() == phone }) {
                         contactsList.add(Contact(name, phone))
                     }
                 }
+                sortContacts()
+                Log.d("HomeFragment", "Contacts loaded: ${contactsList.size}")
             } catch (e: Exception) {
-                e.printStackTrace()
+                Log.e("HomeFragment", "Error parsing JSON", e)
             }
         }
     }
-}
 
+    fun addContact(contact: Contact) {
+        contactsList.add(contact)
+        sortContacts()
+        contactAdapter.notifyDataSetChanged()
+        saveContactsToJSON()
+    }
+
+    fun removeContact(contact: Contact) {
+        Log.d("HomeFragment", "Trying to remove contact: ${contact.getName()} - ${contact.getPhone()}")
+        val iterator = contactsList.iterator()
+        while (iterator.hasNext()) {
+            val item = iterator.next()
+            if (item.getName() == contact.getName() && item.getPhone() == contact.getPhone()) {
+                iterator.remove()
+                contactAdapter.notifyDataSetChanged()
+                saveContactsToJSON()
+                Log.d("HomeFragment", "Contact removed: ${contact.getName()} - ${contact.getPhone()}")
+                break
+            }
+        }
+    }
+
+    fun updateContact(oldContact: Contact, newContact: Contact) {
+        Log.d("HomeFragment", "Trying to update contact: ${oldContact.getName()} - ${oldContact.getPhone()} to ${newContact.getName()} - ${newContact.getPhone()}")
+        val index = contactsList.indexOfFirst { it.getName() == oldContact.getName() && it.getPhone() == oldContact.getPhone() }
+        if (index != -1) {
+            contactsList[index] = newContact
+            contactAdapter.notifyItemChanged(index)
+            saveContactsToJSON()
+            Log.d("HomeFragment", "Contact updated: ${newContact.getName()} - ${newContact.getPhone()}")
+        }
+    }
+
+    private fun sortContacts() {
+        contactsList.sortBy { it.getName() }
+    }
+
+    private fun saveContactsToJSON() {
+        try {
+            val jsonArray = JSONArray()
+            for (contact in contactsList) {
+                val jsonObject = JSONObject()
+                jsonObject.put("name", contact.getName())
+                jsonObject.put("phone", contact.getPhone())
+                jsonArray.put(jsonObject)
+            }
+
+            val file = File(requireContext().filesDir, "contacts.json")
+            file.writeText(jsonArray.toString())
+            Log.d("HomeFragment", "Contacts saved to JSON file: ${file.absolutePath}")
+        } catch (e: Exception) {
+            Log.e("HomeFragment", "Error saving contacts to JSON", e)
+        }
+    }
+}
