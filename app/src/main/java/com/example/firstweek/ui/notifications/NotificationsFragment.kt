@@ -30,7 +30,7 @@ class NotificationsFragment : Fragment() {
     private lateinit var sharedPreferences: SharedPreferences
     private val tasks = mutableListOf<Task>()
 
-    data class Task(val text: String, var isChecked: Boolean)
+    data class Task(var text: String, var isChecked: Boolean) // 수정된 부분: val을 var로 변경
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -81,6 +81,13 @@ class NotificationsFragment : Fragment() {
                 Toast.makeText(requireContext(), "깨비", Toast.LENGTH_SHORT).show()
             }
             saveTasks()
+        }
+
+        editText.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                task.text = editText.text.toString() // 수정된 부분: val을 var로 변경
+                saveTasks()
+            }
         }
 
         editText.setOnLongClickListener {
@@ -142,6 +149,8 @@ class NotificationsFragment : Fragment() {
     private fun loadTasks() {
         val tasksString = sharedPreferences.getString("tasks", "[]")
         val jsonArray = JSONArray(tasksString)
+        tasks.clear() // Clear the current task list
+        binding.tasksContainer.removeAllViews() // Clear the views
         for (i in 0 until jsonArray.length()) {
             val jsonObject = jsonArray.getJSONObject(i)
             val text = jsonObject.getString("text")
@@ -191,6 +200,13 @@ class NotificationsFragment : Fragment() {
             saveTasks()
         }
 
+        editText.setOnFocusChangeListener { _, hasFocus ->
+            if (!hasFocus) {
+                task.text = editText.text.toString() // 수정된 부분: val을 var로 변경
+                saveTasks()
+            }
+        }
+
         editText.setOnLongClickListener {
             showDeleteConfirmationDialog(task, taskLayout)
             true
@@ -206,6 +222,4 @@ class NotificationsFragment : Fragment() {
         _binding = null
     }
 }
-
-
 
