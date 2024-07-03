@@ -79,8 +79,8 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="C:\Users\82109\Downloads\meal.png" />
-                                                <entry key="scalingPercent" value="43" />
+                                                <entry key="imagePath" value="C:\Users\82109\Downloads\ArchiveCamp2.png.webp" />
+                                                <entry key="scalingPercent" value="83" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -113,7 +113,7 @@
                                   <option name="values">
                                     <map>
                                       <entry key="backgroundAssetType" value="COLOR" />
-                                      <entry key="backgroundColor" value="e3d8cc" />
+                                      <entry key="backgroundColor" value="cbcdb4" />
                                     </map>
                                   </option>
                                 </PersistentState>
