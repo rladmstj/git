@@ -72,12 +72,12 @@ class NotificationsFragment : Fragment() {
             if (isChecked) {
                 editText.paintFlags = editText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
-                playSound(R.raw.yahoo)
+                playSound(R.raw.checkin)
                 Toast.makeText(requireContext(), "참 잘했어요!", Toast.LENGTH_SHORT).show()
             } else {
                 editText.paintFlags = editText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
-                playSound(R.raw.cathuh)
+                playSound(R.raw.checkout)
                 Toast.makeText(requireContext(), "깨비", Toast.LENGTH_SHORT).show()
             }
             saveTasks()
@@ -189,13 +189,13 @@ class NotificationsFragment : Fragment() {
             if (isChecked) {
                 editText.paintFlags = editText.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.gray))
-                playSound(R.raw.yahoo)
+                playSound(R.raw.checkin)
                 Toast.makeText(requireContext(), "참 잘했어요!", Toast.LENGTH_SHORT).show()
             } else {
                 editText.paintFlags = editText.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                 editText.setTextColor(ContextCompat.getColor(requireContext(), R.color.black))
-                playSound(R.raw.cathuh)
-                Toast.makeText(requireContext(), "깨비", Toast.LENGTH_SHORT).show()
+                playSound(R.raw.checkout)
+                Toast.makeText(requireContext(), "T.T", Toast.LENGTH_SHORT).show()
             }
             saveTasks()
         }
