@@ -4,6 +4,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
     app:startDestination="@+id/navigation_home">
+    <fragment
+        android:id="@+id/editContactFragment"
+        android:name="com.example.firstweek.ui.home.EditContactFragment"
+        android:label="Edit Contact"
+        tools:layout="@layout/fragment_edit_contact" />
 
     <fragment
         android:id="@+id/addContactFragment"

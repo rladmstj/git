@@ -99,7 +99,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentHomeBinding
-import org.json.JSONArray
+ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.InputStream
@@ -135,7 +135,6 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.addContactFragment)
         }
 
-        // 새로운 연락처를 받아 추가하는 로직
         findNavController().getBackStackEntry(R.id.navigation_home).savedStateHandle.getLiveData<Contact>("newContact")
             .observe(viewLifecycleOwner, Observer { newContact ->
                 newContact?.let {
@@ -146,11 +145,17 @@ class HomeFragment : Fragment() {
                 }
             })
 
-        // 삭제된 연락처를 받아 삭제하는 로직
         sharedViewModel.deletedContact.observe(viewLifecycleOwner, Observer { deletedContact ->
             deletedContact?.let {
                 removeContact(it)
                 sharedViewModel.clearDeletedContact()
+            }
+        })
+
+        sharedViewModel.updatedContact.observe(viewLifecycleOwner, Observer { updatedContact ->
+            updatedContact?.let { (oldContact, newContact) ->
+                updateContact(oldContact, newContact)
+                sharedViewModel.clearUpdatedContact()
             }
         })
 
@@ -227,6 +232,17 @@ class HomeFragment : Fragment() {
                 Log.d("HomeFragment", "Contact removed: ${contact.getName()} - ${contact.getPhone()}")
                 break
             }
+        }
+    }
+
+    fun updateContact(oldContact: Contact, newContact: Contact) {
+        Log.d("HomeFragment", "Trying to update contact: ${oldContact.getName()} - ${oldContact.getPhone()} to ${newContact.getName()} - ${newContact.getPhone()}")
+        val index = contactsList.indexOfFirst { it.getName() == oldContact.getName() && it.getPhone() == oldContact.getPhone() }
+        if (index != -1) {
+            contactsList[index] = newContact
+            contactAdapter.notifyItemChanged(index)
+            saveContactsToJSON()
+            Log.d("HomeFragment", "Contact updated: ${newContact.getName()} - ${newContact.getPhone()}")
         }
     }
 

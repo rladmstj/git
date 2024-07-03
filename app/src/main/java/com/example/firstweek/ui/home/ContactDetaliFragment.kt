@@ -1,5 +1,7 @@
 package com.example.firstweek.ui.home
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -8,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.example.firstweek.R
 import com.example.firstweek.databinding.FragmentContactDetailBinding
 
 class ContactDetailFragment : Fragment() {
@@ -22,18 +25,41 @@ class ContactDetailFragment : Fragment() {
         _binding = FragmentContactDetailBinding.inflate(inflater, container, false)
         val root = binding.root
 
+        var currentContact: Contact? = null
+
         sharedViewModel.selectedContact.observe(viewLifecycleOwner) { contact ->
             contact?.let {
+                currentContact = it
                 binding.nameTextView.text = it.getName()
                 binding.phoneTextView.text = it.getPhone()
             }
         }
 
         binding.button2.setOnClickListener {
-            sharedViewModel.selectedContact.value?.let { contact ->
+            currentContact?.let { contact ->
                 sharedViewModel.deleteContact(contact)
                 findNavController().popBackStack()
                 Toast.makeText(requireContext(), "Contact deleted", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        binding.buttonEdit.setOnClickListener {
+            findNavController().navigate(R.id.editContactFragment)
+        }
+
+        binding.callIcon.setOnClickListener {
+            currentContact?.let { contact ->
+                val phoneUri = Uri.parse("tel:${contact.getPhone()}")
+                val callIntent = Intent(Intent.ACTION_DIAL, phoneUri)
+                startActivity(callIntent)
+            }
+        }
+
+        binding.messageIcon.setOnClickListener {
+            currentContact?.let { contact ->
+                val smsUri = Uri.parse("smsto:${contact.getPhone()}")
+                val smsIntent = Intent(Intent.ACTION_SENDTO, smsUri)
+                startActivity(smsIntent)
             }
         }
 
@@ -45,3 +71,5 @@ class ContactDetailFragment : Fragment() {
         _binding = null
     }
 }
+
+
